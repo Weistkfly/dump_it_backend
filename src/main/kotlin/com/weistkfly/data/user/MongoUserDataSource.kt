@@ -10,8 +10,12 @@ class MongoUserDataSource(
 
     private val users = db.getCollection<User>()
 
-    override suspend fun getUserByUserName(username: String): User? {
-        return users.findOne(User::username eq username)
+    override suspend fun getUserByUserName(email: String): User? {
+        return users.findOne(User::email eq email)
+    }
+
+    override suspend fun getUserByUserId(id: String): User? {
+        return users.findOne(User::id eq id)
     }
 
     override suspend fun insertUser(user: User): Boolean {
@@ -20,8 +24,8 @@ class MongoUserDataSource(
     }
 
     override suspend fun updateUser(user: User, newPassword: String, newSalt: String): Boolean {
-        users.updateOne(User::username eq user.username, setValue(User::salt, newSalt))
-        return users.updateOne(User::username eq user.username, setValue(User::password, newPassword))
+        users.updateOne(User::email eq user.email, setValue(User::salt, newSalt))
+        return users.updateOne(User::email eq user.email, setValue(User::password, newPassword))
             .wasAcknowledged()
     }
 }

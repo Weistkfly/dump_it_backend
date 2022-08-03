@@ -1,9 +1,8 @@
-package com.weistkfly.data.requests
+package com.weistkfly.data.requests.user
 
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class ResetPasswordRequest(
-    val username: String,
     val email: String
 )

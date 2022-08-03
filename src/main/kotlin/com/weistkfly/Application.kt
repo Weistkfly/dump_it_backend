@@ -1,6 +1,8 @@
 package com.weistkfly
 
 import com.weistkfly.data.mail.MailImpl
+import com.weistkfly.data.professor.MongoProfessorDataSource
+import com.weistkfly.data.ranking.MongoRatingDataSource
 import com.weistkfly.data.user.MongoUserDataSource
 import io.ktor.server.application.*
 import com.weistkfly.plugins.*
@@ -23,6 +25,8 @@ fun Application.module() {
         .getDatabase(dbName)
 
     val userDataSource = MongoUserDataSource(db)
+    val ratingDataSource = MongoRatingDataSource(db)
+    val professorDataSource = MongoProfessorDataSource(db)
     val tokenService = JwtTokenService()
     val tokenConfig = TokenConfig(
         issuer = environment.config.property("jwt.issuer").getString(),
@@ -33,7 +37,15 @@ fun Application.module() {
     val hashingService = SHA256HashingService()
     val mail = MailImpl()
 
-    configureRouting(userDataSource, hashingService, tokenService, tokenConfig, mail)
+    configureRouting(
+        userDataSource = userDataSource,
+        hashingService = hashingService,
+        tokenService = tokenService,
+        tokenConfig = tokenConfig,
+        mail = mail,
+        professorDataSource = professorDataSource,
+        ratingDataSource = ratingDataSource
+    )
     configureSecurity(tokenConfig)
     configureMonitoring()
     configureSerialization()

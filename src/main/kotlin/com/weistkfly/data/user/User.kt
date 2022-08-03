@@ -8,16 +8,12 @@ import org.bson.types.ObjectId
 @Serializable
 data class User(
     val email: String,
-    val username: String,
     val password: String,
     val name: String,
     val lastName: String,
-    val phoneNumber: String,
-    val sex: String,
-    val birthDate: String,
-    val country: String,
-    val state: String,
-    val address: String,
+    val school: String,
     val salt: String,
+//    val givenLikes: Int,
+//    val ratingsMade: Int,
     @BsonId val id: String = ObjectId().toString()
 )
