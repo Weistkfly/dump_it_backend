@@ -5,4 +5,6 @@ interface UserDataSource {
     suspend fun getUserByUserId(id : String) : User?
     suspend fun insertUser(user: User): Boolean
     suspend fun updateUser(user: User, newPassword: String, newSalt: String): Boolean
+    suspend fun incrementRatesCount(userId: String): Boolean
+    suspend fun deleteAccount(userId: String): Boolean
 }

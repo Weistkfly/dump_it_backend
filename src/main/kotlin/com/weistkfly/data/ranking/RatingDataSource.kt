@@ -14,7 +14,7 @@ interface RatingDataSource {
 
     suspend fun editRating(ratingId: String, rating: Rating): Boolean
 
-    suspend fun likeRating(ratingId: String): Boolean
+    suspend fun likeRating(ratingId: String, wasLiked: Boolean): Boolean
 
     suspend fun deleteRating(ratingId: String): Boolean
 

@@ -45,7 +45,11 @@ fun Route.signUp(
             name = request.name,
             lastName = request.lastName,
             school = request.school,
-            salt = saltedHash.salt
+            salt = saltedHash.salt,
+            givenLikes = 0,
+            ratingsMade = 0,
+            wasMadeOn = System.currentTimeMillis(),
+            iconId = request.iconId
         )
 
         val wasAcknowledged = userDataSource.insertUser(user)
@@ -104,15 +108,6 @@ fun Route.signIn(
     }
 }
 
-fun Route.authenticate(){
-    authenticate {
-        get("authenticate") {
-            call.respond(HttpStatusCode.OK)
-        }
-
-    }
-}
-
 fun Route.getSecretInfo(
     userDataSource: UserDataSource
 ){
@@ -144,7 +139,7 @@ fun Route.tryEmail(
     userDataSource: UserDataSource,
     hashingService: HashingService
 ){
-    post("resetPassword") {
+    post("reset_password") {
         val request = call.receiveOrNull<ResetPasswordRequest>() ?: kotlin.run {
             call.respond(HttpStatusCode.BadRequest, "There's something wrong with the email request")
             return@post

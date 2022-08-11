@@ -34,5 +34,7 @@ fun Application.configureRouting(
         professors(professorDataSource)
         getProfessor(professorDataSource)
         getProfessors(professorDataSource)
+        rate(professorDataSource, userDataSource, ratingDataSource)
+        likeRate(ratingDataSource)
     }
 }

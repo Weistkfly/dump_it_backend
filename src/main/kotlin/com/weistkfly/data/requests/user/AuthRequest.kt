@@ -8,5 +8,6 @@ data class AuthRequest(
     val password: String,
     val name: String,
     val lastName: String,
-    val school: String
+    val school: String,
+    val iconId: Int
 )

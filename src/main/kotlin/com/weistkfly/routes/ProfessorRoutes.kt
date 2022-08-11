@@ -32,7 +32,8 @@ fun Route.professors(
             veryGood = 0,
             good = 0,
             notGood = 0,
-            bad = 0
+            bad = 0,
+            staredTags = emptyList()
         )
 
         val wasInserted = professorDataSource.addProfessor(professor)
@@ -47,7 +48,7 @@ fun Route.professors(
 fun Route.getProfessor(
     professorDataSource: ProfessorDataSource
 ){
-    get("professor"){
+    get("single_professor"){
         val request = call.receiveOrNull<ProfessorRequest>() ?: kotlin.run {
             call.respond(HttpStatusCode.BadRequest, "Something went wrong getting the professor")
             return@get
@@ -71,7 +72,7 @@ fun Route.getProfessor(
 fun Route.getProfessors(
     professorDataSource: ProfessorDataSource
 ){
-    get("professors"){
+    get("all_professors"){
         val professors = professorDataSource.getAllProfessors()
 
         if (professors.isEmpty()){
@@ -85,5 +86,26 @@ fun Route.getProfessors(
                 professors = professors
             )
         )
+    }
+}
+
+fun Route.getBestRatedProfessors(
+    professorDataSource: ProfessorDataSource
+){
+    get("best_rated_professor") {
+        val professors = professorDataSource.getBestRatedProfessors()
+
+        if (professors.isEmpty()){
+            call.respond("There are no professors yet")
+            return@get
+        }
+
+        call.respond(
+            status = HttpStatusCode.OK,
+            message = AllProfessorsResponses(
+                professors = professors
+            )
+        )
+
     }
 }

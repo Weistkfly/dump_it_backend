@@ -9,12 +9,13 @@ data class Professor(
     var reviewCount: Int,
     var avgRating: Double,
     val school: String,
-    val avgDifficulty: Double,
+    var avgDifficulty: Double,
     var excellent: Int,
     var veryGood: Int,
     var good: Int,
     var notGood: Int,
     var bad: Int,
+    val staredTags: List<String>,
     @BsonId
     val id: String = ObjectId().toString()
 )

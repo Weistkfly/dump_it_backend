@@ -1,5 +1,6 @@
 package com.weistkfly.data.user
 
+import com.weistkfly.data.ranking.Rating
 import org.litote.kmongo.coroutine.CoroutineDatabase
 import org.litote.kmongo.eq
 import org.litote.kmongo.setValue
@@ -9,6 +10,7 @@ class MongoUserDataSource(
 ): UserDataSource {
 
     private val users = db.getCollection<User>()
+    private val rates = db.getCollection<Rating>()
 
     override suspend fun getUserByUserName(email: String): User? {
         return users.findOne(User::email eq email)
@@ -27,5 +29,17 @@ class MongoUserDataSource(
         users.updateOne(User::email eq user.email, setValue(User::salt, newSalt))
         return users.updateOne(User::email eq user.email, setValue(User::password, newPassword))
             .wasAcknowledged()
+    }
+
+    override suspend fun incrementRatesCount(userId: String): Boolean {
+        val user = users.findOneById(userId)
+        return users.updateOneById(userId, setValue(User::ratingsMade, user!!.ratingsMade + 1))
+            .wasAcknowledged()
+    }
+
+    override suspend fun deleteAccount(userId: String): Boolean {
+        rates.deleteMany(Rating::userId eq userId)
+
+        return users.deleteOneById(userId).wasAcknowledged()
     }
 }
