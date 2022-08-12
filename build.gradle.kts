@@ -79,8 +79,8 @@ task("deploy") {
         doLast {
             val knownHosts = File.createTempFile("knownhosts", "txt")
             val user = "root"
-            val host = "157.245.10.81"
-            val key = file("keys/jwtAuth")
+            val host = "161.35.14.35"
+            val key = file("keys/dumpit-key")
             val jarFileName = "ktor-user-$version-all.jar"
             try {
                 "scp"(

@@ -11,5 +11,6 @@ data class NewRateRequest(
     val subjectCredits: Int,
     val rate: Int,
     val difficulty: Int,
-    val professorId: String
+    val professorId: String,
+    val wouldTakeAgain: Boolean
 )

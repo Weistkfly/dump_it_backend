@@ -42,4 +42,8 @@ class MongoUserDataSource(
 
         return users.deleteOneById(userId).wasAcknowledged()
     }
+    override suspend fun changeUserIcon(userId: String, newIconId: Int): Boolean {
+        return users.updateOneById(userId, setValue(User::iconId, newIconId ))
+            .wasAcknowledged()
+    }
 }

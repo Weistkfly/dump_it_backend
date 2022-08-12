@@ -2,6 +2,7 @@ package com.weistkfly.routes
 
 import com.weistkfly.data.mail.MailImpl
 import com.weistkfly.data.requests.user.AuthRequest
+import com.weistkfly.data.requests.user.NewIconRequest
 import com.weistkfly.data.requests.user.ResetPasswordRequest
 import com.weistkfly.data.requests.user.SignInRequest
 import com.weistkfly.data.responses.AuthResponse
@@ -24,8 +25,8 @@ import io.ktor.server.routing.*
 fun Route.signUp(
     hashingService: HashingService,
     userDataSource: UserDataSource
-){
-    post("signup"){
+) {
+    post("sign_up") {
         val request = call.receiveOrNull<AuthRequest>() ?: kotlin.run {
             call.respond(HttpStatusCode.BadRequest, "Something went wrong during sign up")
             return@post
@@ -53,7 +54,7 @@ fun Route.signUp(
         )
 
         val wasAcknowledged = userDataSource.insertUser(user)
-        if(!wasAcknowledged){
+        if (!wasAcknowledged) {
             call.respond(HttpStatusCode.Conflict)
             return@post
         }
@@ -66,15 +67,15 @@ fun Route.signIn(
     hashingService: HashingService,
     tokenService: TokenService,
     tokenConfig: TokenConfig
-){
-    post("signin"){
+) {
+    post("sign_in") {
         val request = call.receiveOrNull<SignInRequest>() ?: kotlin.run {
             call.respond(HttpStatusCode.BadRequest, "Something went wrong on sign in")
             return@post
         }
 
         val user = userDataSource.getUserByUserName(request.email)
-        if (user == null){
+        if (user == null) {
             call.respond(HttpStatusCode.Conflict, "Incorrect username or password")
             return@post
         }
@@ -86,7 +87,7 @@ fun Route.signIn(
                 salt = user.salt
             )
         )
-        if (!isValidPassword){
+        if (!isValidPassword) {
             call.respond(HttpStatusCode.Conflict, "Incorrect username or password")
             return@post
         }
@@ -110,26 +111,58 @@ fun Route.signIn(
 
 fun Route.getSecretInfo(
     userDataSource: UserDataSource
-){
-    authenticate{
-        get("secret") {
+) {
+    authenticate {
+        get("user_info") {
 
             val principal = call.principal<JWTPrincipal>()
             val userId = principal!!.payload.getClaim("userId").asString()
 
             val user = userDataSource.getUserByUserId(userId)
-            if (user == null){
+            if (user == null) {
                 call.respond(HttpStatusCode.Conflict, "Token is not working")
                 return@get
             }
             call.respond(
                 HttpStatusCode.OK,
                 UserResponse(
-                email = user.email,
-                name = user.name,
-                lastName = user.lastName,
-                school = user.school
-            ))
+                    email = user.email,
+                    name = user.name,
+                    lastName = user.lastName,
+                    school = user.school,
+                    givenLikes = user.givenLikes,
+                    ratingsMade = user.ratingsMade,
+                    wasMadeOn = user.wasMadeOn,
+                    iconId = user.iconId
+                )
+            )
+        }
+    }
+}
+
+fun Route.changeUserIcon(
+    userDataSource: UserDataSource
+) {
+    authenticate {
+        patch("new_user_icon") {
+            val request = call.receiveOrNull<NewIconRequest>() ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest, "Something went wrong changing the profile icon")
+                return@patch
+            }
+
+            val principal = call.principal<JWTPrincipal>()
+            val userId = principal!!.payload.getClaim("userId").asString()
+
+            val wasIconUpdated = userDataSource.changeUserIcon(userId, request.newIconId)
+            if (!wasIconUpdated) {
+                call.respond(HttpStatusCode.Conflict, "The Icon wasn't updated")
+                return@patch
+            }
+
+            call.respond(
+                HttpStatusCode.OK,
+                message = "Icon updated"
+            )
         }
     }
 }
@@ -138,18 +171,21 @@ fun Route.tryEmail(
     mail: MailImpl,
     userDataSource: UserDataSource,
     hashingService: HashingService
-){
+) {
     post("reset_password") {
         val request = call.receiveOrNull<ResetPasswordRequest>() ?: kotlin.run {
             call.respond(HttpStatusCode.BadRequest, "There's something wrong with the email request")
             return@post
         }
-        val user = userDataSource.getUserByUserName(request.email) ?: return@post
+        val principal = call.principal<JWTPrincipal>()
+        val userId = principal!!.payload.getClaim("userId").asString()
+
+        val user = userDataSource.getUserByUserId(userId) ?: return@post
         val newPassword = "123456789"
         val saltedHash = hashingService.generateSaltedHash(newPassword)
         val wasPasswordUpdated = userDataSource.updateUser(user, saltedHash.hash, saltedHash.salt)
         val wasMailSent = mail.sendResetPasswordMail(user.name, request.email, newPassword)
-        if (wasMailSent && wasPasswordUpdated){
+        if (wasMailSent && wasPasswordUpdated) {
             call.respond(HttpStatusCode.OK, "Password reset successful")
             return@post
         }
