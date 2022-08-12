@@ -73,6 +73,10 @@ ant.withGroovyBuilder {
     )
 }
 
+tasks {
+    create("stage").dependsOn("installDist")
+}
+
 task("deploy") {
     dependsOn("clean", "shadowJar")
     ant.withGroovyBuilder {
