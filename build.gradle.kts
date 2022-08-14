@@ -46,81 +46,9 @@ dependencies {
 
     implementation("commons-codec:commons-codec:$commons_codec_version")
 
+    //CORS
+    implementation("io.ktor:ktor-server-cors:$ktor_version")
+
     //Mailgun
     implementation("com.github.Commit451:mailgun:1.2.1")
-
-    sshAntTask("org.apache.ant:ant-jsch:1.10.12")
-}
-
-tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
-    manifest {
-        attributes(
-            "Main-Class" to application.mainClass.get()
-        )
-    }
-}
-
-ant.withGroovyBuilder {
-    "taskdef"(
-        "name" to "scp",
-        "classname" to "org.apache.tools.ant.taskdefs.optional.ssh.Scp",
-        "classpath" to configurations.get("sshAntTask").asPath
-    )
-    "taskdef"(
-        "name" to "ssh",
-        "classname" to "org.apache.tools.ant.taskdefs.optional.ssh.SSHExec",
-        "classpath" to configurations.get("sshAntTask").asPath
-    )
-}
-
-tasks {
-    create("stage").dependsOn("installDist")
-}
-
-task("deploy") {
-    dependsOn("clean", "shadowJar")
-    ant.withGroovyBuilder {
-        doLast {
-            val knownHosts = File.createTempFile("knownhosts", "txt")
-            val user = "root"
-            val host = "161.35.14.35"
-            val key = file("keys/dumpit-key")
-            val jarFileName = "ktor-user-$version-all.jar"
-            try {
-                "scp"(
-                    "file" to file("build/libs/$jarFileName"),
-                    "todir" to "$user@$host:/root/jwtauth",
-                    "keyfile" to key,
-                    "trust" to true,
-                    "knownhosts" to knownHosts
-                )
-                "ssh"(
-                    "host" to host,
-                    "username" to user,
-                    "keyfile" to key,
-                    "trust" to true,
-                    "knownhosts" to knownHosts,
-                    "command" to "mv /root/jwtauth/$jarFileName /root/jwtauth/jwtauth.jar"
-                )
-                "ssh"(
-                    "host" to host,
-                    "username" to user,
-                    "keyfile" to key,
-                    "trust" to true,
-                    "knownhosts" to knownHosts,
-                    "command" to "systemctl stop jwtauth"
-                )
-                "ssh"(
-                    "host" to host,
-                    "username" to user,
-                    "keyfile" to key,
-                    "trust" to true,
-                    "knownhosts" to knownHosts,
-                    "command" to "systemctl start jwtauth"
-                )
-            } finally {
-                knownHosts.delete()
-            }
-        }
-    }
 }

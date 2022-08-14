@@ -50,12 +50,13 @@ fun Route.rate(
             }
 
             val wasRatesMadeIncremented = userDataSource.incrementRatesCount(userId)
-            if (!wasRatesMadeIncremented){
+            if (!wasRatesMadeIncremented) {
                 call.respond(HttpStatusCode.Conflict, "Error incrementing user's madeRates count")
                 return@post
             }
 
-            val professor = professorDataSource.updateProfessorRate(request.professorId, request.rate, request.difficulty)
+            val professor =
+                professorDataSource.updateProfessorRate(request.professorId, request.rate, request.difficulty)
             if (!professor) {
                 call.respond(HttpStatusCode.Conflict, "Couldn't update professor")
                 return@post
@@ -87,8 +88,8 @@ fun Route.likeRate(
 
 fun Route.getRatingsByProfessor(
     ratingDataSource: RatingDataSource
-){
-    get("rates_by_professor"){
+) {
+    get("rates_by_professor") {
         val request = call.receiveOrNull<GetRatingsByProfessorRequest>() ?: kotlin.run {
             call.respond(HttpStatusCode.BadRequest, "Something wrong with the request")
             return@get
@@ -107,9 +108,9 @@ fun Route.getRatingsByProfessor(
 
 fun Route.getRatingsByUser(
     ratingDataSource: RatingDataSource
-){
+) {
     authenticate {
-        get("rates_by_user"){
+        get("rates_by_user") {
 
             val principal = call.principal<JWTPrincipal>()
             val userId = principal!!.payload.getClaim("userId").asString()
@@ -128,7 +129,7 @@ fun Route.getRatingsByUser(
 
 fun Route.updateRating(
     rateDataSource: RatingDataSource
-){
+) {
     put("update_rate") {
         val request = call.receiveOrNull<UpdateRateRequest>() ?: kotlin.run {
             call.respond(HttpStatusCode.BadRequest, "Something went wrong with the request")
@@ -137,7 +138,7 @@ fun Route.updateRating(
 
         val wasEdited = rateDataSource.editRating(request.rate.id, request.rate)
 
-        if (!wasEdited){
+        if (!wasEdited) {
             call.respond(HttpStatusCode.BadRequest, "Couldn't update rate")
             return@put
         }
@@ -148,7 +149,7 @@ fun Route.updateRating(
 
 fun Route.deleteRate(
     rateDataSource: RatingDataSource
-){
+) {
     delete("delete_rate") {
         val request = call.receiveOrNull<DeleteRateRequest>() ?: kotlin.run {
             call.respond(HttpStatusCode.BadRequest, "Something wrong with the request")
@@ -157,7 +158,7 @@ fun Route.deleteRate(
 
         val wasDeleted = rateDataSource.deleteRating(request.rateId)
 
-        if (!wasDeleted){
+        if (!wasDeleted) {
             call.respond(HttpStatusCode.Conflict, "Couldn't delete rate")
             return@delete
         }

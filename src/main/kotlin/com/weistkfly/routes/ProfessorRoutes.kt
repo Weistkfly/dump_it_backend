@@ -168,7 +168,7 @@ fun Route.getProfessorBySchool(
 fun Route.updateProfessor(
     professorDataSource: ProfessorDataSource
 ) {
-    put ("update_professor"){
+    put("update_professor") {
         val request = call.receiveOrNull<UpdateProfessorRequest>() ?: kotlin.run {
             call.respond(HttpStatusCode.BadRequest, "Something went wrong updating the professor")
             return@put
@@ -190,7 +190,7 @@ fun Route.updateProfessor(
         )
         val newProf = professorDataSource.updateProfessor(request.id, prof)
 
-        if (!newProf){
+        if (!newProf) {
             call.respond(HttpStatusCode.Conflict, "Couldn't update professor")
             return@put
         }
